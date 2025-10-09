@@ -13,4 +13,9 @@ public class ProductRequest {
     private Integer stackQuantity;
     private String category;
     private String imageUrl;
+    private boolean active;
+
+
+
+
 }

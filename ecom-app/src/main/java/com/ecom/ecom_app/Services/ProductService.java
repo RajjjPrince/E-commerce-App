@@ -15,6 +15,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
+
+   public List<ProductResponse> searchProduct(String keyword) {
+        return productRepository.searchProducts(keyword).stream()
+                .map(this :: mapToProductResponse)
+                .collect(Collectors.toList());
+    }
+
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = new Product();
         updateProductFromRequest(product,productRequest);
@@ -22,11 +29,7 @@ public class ProductService {
         return mapToProductResponse(savedProduct);
     }
 
-    public List<ProductResponse> fetchAllProducts(){
-        return productRepository.findAll().stream()
-                .map(this :: mapToProductResponse)
-                .collect(Collectors.toList());
-    }
+
 
     public Optional<ProductResponse> updateProduct(Long id, ProductRequest productRequest) {
          return productRepository.findById(id)
@@ -36,10 +39,16 @@ public class ProductService {
                         return mapToProductResponse(savedProduct);
                     });
     }
+    public List<ProductResponse> fetchAllProducts() {
+        return productRepository.findAll().stream()
+                .map(this::mapToProductResponse) // maps Product -> ProductResponse
+                .collect(Collectors.toList());
+    }
 
-    public Optional<ProductResponse> fetchProduct(Long id) {
-        return productRepository.findById(id)
-                .map(this::mapToProductResponse);
+    public List<ProductResponse> fetchAllActiveProducts() {
+        return productRepository.findByActiveTrue().stream()
+                .map(this::mapToProductResponse)
+                .collect(Collectors.toList());
     }
 
 
@@ -65,8 +74,22 @@ public class ProductService {
         product.setImageUrl(productRequest.getImageUrl());
         product.setPrice(productRequest.getPrice());
         product.setStackQuantity(productRequest.getStackQuantity());
+        product.setActive(productRequest.isActive());
     }
 
 
+    public boolean deleteProduct(Long id) {
 
+        return  productRepository.findById(id)
+                .map(product -> {
+                    product.setActive(false);
+                    productRepository.save(product);
+                    return true;
+                }).orElse(false)   ;
+
+//        Product product = productRepository.findById(id)
+//              .orElseThrow(()-> new RuntimeException("Product not found"));
+//        product.setActive(false);
+//        productRepository.save(product);
+    }
 }

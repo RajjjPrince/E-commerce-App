@@ -19,7 +19,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping()
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> fetchAllProducts() {
         return new ResponseEntity<>(productService.fetchAllProducts()
                 , HttpStatus.OK);
     }
@@ -37,16 +37,22 @@ public class ProductController {
                 .map(ResponseEntity::ok)
                 .orElseGet(()-> ResponseEntity.notFound().build());
     }
-    @GetMapping("/{id}")
-        public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id) {
-            Optional<ProductResponse> product = productService.fetchProduct(id);
-
-            if (product.isPresent()) {
-                return ResponseEntity.ok(product.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+    @GetMapping("/active")
+    public ResponseEntity<List<ProductResponse>> fetchAllActiveProducts() {
+        return ResponseEntity.ok(productService.fetchAllActiveProducts());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
+        boolean deleted = productService.deleteProduct(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductResponse>> searchProduct(@RequestParam String keyword){
+        return ResponseEntity.ok(productService.searchProduct(keyword));
+    }
+
 
 }
 
